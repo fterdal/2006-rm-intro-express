@@ -7,6 +7,10 @@ app.use(morgan('dev'));
 const staticMiddleware = express.static('public');
 app.use(staticMiddleware);
 
+// BODY PARSING
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
+
 // app.use((req, res, next) => {
 //   console.log(req);
 //   next();
@@ -29,13 +33,7 @@ app.get('/', (req, res, next) => {
 app.get('/blt', (req, res, next) => {
   res.json({
     name: 'BLT',
-    ingredients: [
-      'bacon',
-      'lettuce',
-      'tomato',
-      'bread',
-      'mayo'
-    ]
+    ingredients: ['bacon', 'lettuce', 'tomato', 'bread', 'mayo'],
   });
 });
 
@@ -56,21 +54,38 @@ let sandwiches = [
     id: 4,
     name: 'Chicken Parm',
   },
-]
+];
 
 app.get('/sandwiches', (req, res, next) => {
-  res.json(sandwiches);
-})
+  res.send(`
+    <h2>Sandwiches</h2>
+    <ul>
+      ${sandwiches
+        .map(
+          (sandwich) => `
+        <li>${sandwich.name}</li>
+      `
+        )
+        .join('')}
+    </ul>
+  `);
+});
+
+app.post('/sandwiches', (req, res, next) => {
+  const newSandwichName = req.body.sandwichName;
+  sandwiches.push({ id: sandwiches.length, name: newSandwichName });
+  res.sendStatus(201);
+});
 
 app.get('/sandwiches/:id', (req, res, next) => {
   const id = +req.params.id;
   const sandwich = sandwiches.find((sandwich) => sandwich.id === id);
   if (!sandwich) {
-    res.sendStatus(404)
+    res.sendStatus(404);
   } else {
-    res.json(sandwich)
+    res.json(sandwich);
   }
-})
+});
 
 // INSANITY!!!
 // app.get('/sandwiches/1', (req, res, next) => {
